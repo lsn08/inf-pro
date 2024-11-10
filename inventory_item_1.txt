@@ -1,0 +1,6 @@
+Name: 꽃게
+Giving Money: 80
+Fish Status: 1
+Fish Size: 4
+Quantity: 1
+Total Weight: 40

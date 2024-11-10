@@ -1,0 +1,6 @@
+Name: 돛새치
+Giving Money: 150
+Fish Status: 2
+Fish Size: 9
+Quantity: 1
+Total Weight: 90

@@ -1,0 +1,4 @@
+Fishing Master: 0
+Fishing Grandmaster: 0
+Fishing God: 0
+Int Title: 0

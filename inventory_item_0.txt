@@ -1,0 +1,6 @@
+Name: 백조기
+Giving Money: 40
+Fish Status: 0
+Fish Size: 2
+Quantity: 1
+Total Weight: 20

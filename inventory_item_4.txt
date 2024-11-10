@@ -1,0 +1,6 @@
+Name: 바라쿠다
+Giving Money: 90
+Fish Status: 1
+Fish Size: 2
+Quantity: 2
+Total Weight: 30

@@ -1,0 +1,6 @@
+Name: 눈다랑어
+Giving Money: 120
+Fish Status: 2
+Fish Size: 5
+Quantity: 1
+Total Weight: 50
