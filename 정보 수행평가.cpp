@@ -6,8 +6,6 @@
 #include <time.h>
 #include <conio.h>
 #include <windows.h>
-#include <queue>
-#include <stack>
 #include <chrono>
 using namespace std;
 
@@ -190,7 +188,7 @@ FishCell fish_types[] = {
     {100, "망둥어", 2, 4},
     {80, "꽃게", 1, 3},
     {60, "강도다리", 1, 3},
-    {90, "참치치", 1, 4},
+    {90, "참치", 1, 4},
 
     // Cold 지형
     {100, "대구", 1, 4},
@@ -256,7 +254,7 @@ FishCell shallow_fish[] = {
     {100, "망둥어", 2, 4},
     {80, "꽃게", 1, 3},
     {60, "강도다리", 1, 3},
-    {90, "참치치", 1, 4}
+    {90, "참치", 1, 4}
 };
 
 // Cold 지형 물고기 목록
@@ -317,7 +315,7 @@ int target_y = -1;
 int obstacles = 0;
 int total_fish_caught = 0;
 HANDLE consoleHandle;
-Shipcell myship = { 100,100 };
+Shipcell myship = { 1,100 };
 
 void upgrade_ship() {
     int upgrade_choice;
@@ -325,7 +323,11 @@ void upgrade_ship() {
     printf("1. 속도 증가 (비용: 700)\n");
     printf("2. 연료 용량 증가 (비용: 500)\n");
     printf("3. 인벤토리 용량 증가 (비용: 300)\n");
-    scanf("%d", &upgrade_choice);
+    printf("선택을 입력하세요: ");
+    if (scanf("%d", &upgrade_choice) != 1 || upgrade_choice < 1 || upgrade_choice > 3) {
+        printf("잘못된 선택입니다! 다시 시도하세요.\n");
+        return;
+    }
 
     if (upgrade_choice == 1 && gold >= 700) {
         myship.velocity += 1;
@@ -343,9 +345,10 @@ void upgrade_ship() {
         printf("인벤토리 용량이 업그레이드되었습니다! 현재 인벤토리 용량: %d\n", max_inventory_weight);
     }
     else {
-        printf("업그레이드에 필요한 자원이 부족합니다!\n");
+        printf("골드가 부족합니다!\n");
     }
 }
+
 
 
 void buy_name() {
@@ -354,40 +357,44 @@ void buy_name() {
     printf("1. '낚시 고수' (100,000 골드) - 속도 +1\n");
     printf("2. '낚시 초고수' (500,000 골드) - 연료 용량 +50\n");
     printf("3. '낚시의 신' (5,000,000 골드) - 속도 +2, 연료 용량 +100\n");
-    printf("4. ''int'' (2,147,480,000 골드) - 속도 +100, 연료 용량 +500000\n");
-    printf("Enter your choice (1-3): ");
-    scanf("%d", &name_choice);
+    printf("4. 'int' (2,147,480,000 골드) - 속도 +100, 연료 용량 +500000\n");
+    printf("Enter your choice (1-4): ");
+    if (scanf("%d", &name_choice) != 1 || name_choice < 1 || name_choice > 4) {
+        printf("잘못된 선택입니다! 다시 시도하세요.\n");
+        return;
+    }
 
     if (name_choice == 1 && gold >= 100000) {
         myship.velocity += 1;
         gold -= 100000;
-        has_fishing_master = true;  // 구매 여부 업데이트
+        has_fishing_master = true;
         printf("\n칭호 '낚시 고수'를 구매했습니다! 현재 속도: %d\n", myship.velocity);
     }
     else if (name_choice == 2 && gold >= 500000) {
         myship.fuel2 += 50;
         gold -= 500000;
-        has_fishing_grandmaster = true;  // 구매 여부 업데이트
+        has_fishing_grandmaster = true;
         printf("\n칭호 '낚시 초고수'를 구매했습니다! 현재 연료 용량: %d\n", myship.fuel2);
     }
     else if (name_choice == 3 && gold >= 5000000) {
         myship.velocity += 2;
         myship.fuel2 += 100;
         gold -= 5000000;
-        has_fishing_god = true;  // 구매 여부 업데이트
+        has_fishing_god = true;
         printf("\n칭호 '낚시의 신'을 구매했습니다! 현재 속도: %d, 현재 연료 용량: %d\n", myship.velocity, myship.fuel2);
     }
     else if (name_choice == 4 && gold >= 2147480000) {
         myship.velocity += 100;
         myship.fuel2 += 500000;
         gold -= 2147480000;
-        has_int_title = true;  // 구매 여부 업데이트
+        has_int_title = true;
         printf("\n칭호 'int'를 구매했습니다! 현재 속도: %d, 현재 연료 용량: %d\n", myship.velocity, myship.fuel2);
     }
     else {
         printf("\n골드가 부족합니다. 현재 골드: %d\n", gold);
     }
 }
+
 
 void sell_fish() {
     if (inventory_count == 0) {
@@ -404,39 +411,28 @@ void sell_fish() {
 
     int choice;
     printf("판매할 물고기의 번호를 입력하세요 (종료하려면 0): ");
-    scanf("%d", &choice);
+    if (scanf("%d", &choice) != 1 || choice < 0 || choice > inventory_count) {
+        printf("잘못된 선택입니다! 다시 시도하세요.\n");
+        return;
+    }
 
     if (choice > 0 && choice <= inventory_count) {
         int index = choice - 1;
         int sale_value = static_cast<int>(inventory[index].fish.giving_money * inventory[index].quantity * 1.5);
         gold += sale_value;
-        current_weight -= inventory[index].total_weight;
+        int new_weight = current_weight - inventory[index].total_weight;
+        current_weight = (new_weight >= 0) ? new_weight : 0;
 
         printf("%d개의 %s(을)를 %d 골드에 판매했습니다! 현재 골드: %d\n",
             inventory[index].quantity, inventory[index].fish.name, sale_value, gold);
 
-        // 판매한 물고기 파일 삭제
-        char filename[50];
-        snprintf(filename, sizeof(filename), "%s%d.txt", INVENTORY_FILE_PREFIX, index);
-
-        // 판매한 물고기를 인벤토리에서 제거하고 나머지 항목을 이동
         for (int i = index; i < inventory_count - 1; i++) {
             inventory[i] = inventory[i + 1];
-
-            // 파일 이름을 업데이트하여 파일 순서를 유지
-            char old_filename[50];
-            char new_filename[50];
-            snprintf(old_filename, sizeof(old_filename), "%s%d.txt", INVENTORY_FILE_PREFIX, i + 1);
-            snprintf(new_filename, sizeof(new_filename), "%s%d.txt", INVENTORY_FILE_PREFIX, i);
-            rename(old_filename, new_filename);
         }
-
         inventory_count--;
     }
-    else if (choice != 0) {
-        printf("잘못된 선택입니다.\n");
-    }
 }
+
 
 void enter_shop() {
     char shop_command;
@@ -913,7 +909,6 @@ void refuel() {
 }
 
 void move_towards_target() {
-    // 목표 지점에 도달했을 경우
     if (ship_x == target_x && ship_y == target_y) {
         printf("목표 지점에 도착했습니다!\n");
         SLEEP(1000);
@@ -922,20 +917,15 @@ void move_towards_target() {
         return;
     }
 
-    // 속도가 200 이상일 경우 즉시 목표 지점으로 이동
     if (myship.velocity >= 200) {
-        // 현재 위치의 상태 복원 (레이어에서 어선 제거)
         map[current_layer][ship_x][ship_y].object = '\0';
 
-        // 목표 위치로 바로 이동
         int distance = abs(target_x - ship_x) + abs(target_y - ship_y);
         ship_x = target_x;
         ship_y = target_y;
 
-        // 연료 소모
         fuell -= distance;
 
-        // 새로운 위치에 어선을 표시 (레이어에 표시)
         map[current_layer][ship_x][ship_y].object = 'B';
 
         printf("속도가 너무 빨라 목표 지점으로 바로 이동합니다!\n");
@@ -943,34 +933,32 @@ void move_towards_target() {
         return;
     }
 
-    // BFS를 사용하여 최단 경로를 찾습니다.
-    typedef struct {
+    struct Node {
         int x, y;
         int parent_index;
-    } Node;
+    };
 
     Node queue[MAP_HEIGHT * MAP_WIDTH];
     int front = 0, rear = 0;
+    Node nodes[MAP_HEIGHT * MAP_WIDTH];
     int visited[MAP_HEIGHT][MAP_WIDTH] = { 0 };
 
-    // 시작 노드를 큐에 추가합니다.
-    queue[rear++] = Node{ ship_x, ship_y, -1 };
+    queue[rear++] = { ship_x, ship_y, -1 };
     visited[ship_x][ship_y] = 1;
 
-    int found = 0;
+    bool found = false;
     int target_index = -1;
 
-    // BFS 탐색
     while (front < rear) {
         Node current = queue[front++];
+        nodes[front - 1] = current;
 
         if (current.x == target_x && current.y == target_y) {
-            found = 1;
+            found = true;
             target_index = front - 1;
             break;
         }
 
-        // 4방향 탐색 (상, 하, 좌, 우)
         int directions[4][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
         for (int i = 0; i < 4; i++) {
             int new_x = current.x + directions[i][0];
@@ -979,36 +967,29 @@ void move_towards_target() {
             if (new_x >= 0 && new_x < MAP_HEIGHT && new_y >= 0 && new_y < MAP_WIDTH &&
                 !visited[new_x][new_y] && map[current_layer][new_x][new_y].object != 'X' && map[current_layer][new_x][new_y].object != 'I') {
                 visited[new_x][new_y] = 1;
-                queue[rear++] = Node{ new_x, new_y, front - 1 };
+                queue[rear++] = { new_x, new_y, front - 1 };
             }
         }
     }
 
     if (found) {
-        // 경로를 역추적하여 다음 이동을 결정합니다.
-        Node current = queue[target_index];
+        Node current = nodes[target_index];
         while (current.parent_index != -1) {
-            if (queue[current.parent_index].x == ship_x && queue[current.parent_index].y == ship_y) {
+            if (nodes[current.parent_index].x == ship_x && nodes[current.parent_index].y == ship_y) {
                 break;
             }
-            current = queue[current.parent_index];
+            current = nodes[current.parent_index];
         }
 
-        // 현재 위치의 상태 복원 (레이어에서 어선 제거)
         map[current_layer][ship_x][ship_y].object = '\0';
 
-        // 이동한 좌표 업데이트
         ship_x = current.x;
         ship_y = current.y;
 
-        // 연료 소모
         fuell -= 1;
 
-        // 새로운 위치에 어선을 표시 (레이어에 표시)
         map[current_layer][ship_x][ship_y].object = 'B';
-
-        // 속도에 비례하여 이동 속도 조절 (속도가 높을수록 Sleep 시간이 짧아짐)
-        int sleep_time = 500 / myship.velocity;  // 속도가 높을수록 sleep_time이 작아짐
+        int sleep_time = 500 / myship.velocity;
         if (sleep_time > 0) {
             SLEEP(sleep_time);
         }
@@ -1024,13 +1005,13 @@ void move_towards_target() {
 void reset_layer(int previous_layer) {
     for (int i = 0; i < MAP_HEIGHT; i++) {
         for (int j = 0; j < MAP_WIDTH; j++) {
-            // 이전 레이어의 어선 위치를 초기화 (어선 제거)
             if (map[previous_layer][i][j].object == 'B') {
                 map[previous_layer][i][j].object = '\0';
             }
         }
     }
 }
+
 void change_layer(char direction) {
     int temp = current_layer;  // 현재 레이어 값을 임시 변수에 저장
 
