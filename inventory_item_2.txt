@@ -1,6 +1,0 @@
-Name: 백상아리
-Giving Money: 400
-Fish Status: 1
-Fish Size: 8
-Quantity: 1
-Total Weight: 80
